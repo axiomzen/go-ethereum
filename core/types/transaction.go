@@ -198,6 +198,21 @@ func (tx *Transaction) To() *common.Address {
 	}
 }
 
+// From returns the sender address of the transaction.
+// It returns nil if signature is invalid or nil.
+func (tx *Transaction) From() (from *common.Address) {
+	if tx.data.V != nil {
+		// make a best guess about the signer and use that to derive the sender
+		signer := deriveSigner(tx.data.V)
+		f, err := Sender(signer, tx)
+		if err == nil {
+			return &f
+		}
+	}
+	// Return nil if V is nil or sender derivation fails
+	return nil
+}
+
 // Hash hashes the RLP encoding of tx.
 // It uniquely identifies the transaction.
 func (tx *Transaction) Hash() common.Hash {
